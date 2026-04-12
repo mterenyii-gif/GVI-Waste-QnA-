@@ -227,6 +227,12 @@
   const sendBtn    = document.getElementById('send');
   const emptyEl    = document.getElementById('empty');
 
+  function formatText(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+  }
+  
   let conversationId = null;
   let isLoading = false;
 
@@ -238,7 +244,7 @@
     msg.className = `msg ${role}`;
     msg.innerHTML = `
       <div class="msg-avatar">${role === 'user' ? 'You' : 'GV'}</div>
-      <div class="bubble">${text.replace(/\n/g, '<br>')}</div>
+      <div class="bubble">${formatText(text)}</div>
     `;
     messagesEl.appendChild(msg);
     messagesEl.scrollTop = messagesEl.scrollHeight;
