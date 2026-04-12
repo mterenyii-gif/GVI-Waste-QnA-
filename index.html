@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GoVacation Indonesia – AI Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #e40028;
+      --red-dark: #c2001f;
+      --grey: #878787;
+      --dark-grey: #575757;
+      --bg: #f5f5f5;
+      --white: #ffffff;
+      --border: #e0e0e0;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--bg);
+      color: var(--dark-grey);
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 40px 20px 30px;
+    }
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 28px;
+      width: 100%;
+      max-width: 700px;
+    }
+    .logo-wrap { margin-bottom: 20px; }
+    .logo-wrap img { height: 52px; width: auto; display: block; }
+    .divider {
+      width: 60px; height: 3px;
+      background: var(--red);
+      border-radius: 2px;
+      margin: 0 auto 18px;
+    }
+    .tagline {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--dark-grey);
+      text-align: center;
+      max-width: 560px;
+      line-height: 1.65;
+    }
+    .chat-wrap {
+      width: 100%;
+      max-width: 700px;
+      background: var(--white);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      height: 520px;
+      overflow: hidden;
+    }
+    .chat-topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--white);
+    }
+    .topbar-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      background: #3ecf8e;
+      box-shadow: 0 0 6px rgba(62,207,142,0.5);
+      animation: pulse 2.5s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .topbar-label { font-size: 13px; font-weight: 600; color: var(--dark-grey); }
+    .topbar-sub { font-size: 12px; color: var(--grey); }
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+    .msg { display: flex; gap: 10px; align-items: flex-end; animation: fadeUp 0.2s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .msg.user { flex-direction: row-reverse; }
+    .msg-avatar {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      flex-shrink: 0; color: white;
+    }
+    .msg.bot .msg-avatar { background: var(--red); }
+    .msg.user .msg-avatar { background: var(--dark-grey); }
+    .bubble {
+      max-width: 72%;
+      padding: 11px 15px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+    .msg.bot .bubble { background: #f0f0f0; color: var(--dark-grey); border-bottom-left-radius: 4px; }
+    .msg.user .bubble { background: var(--red); color: white; border-bottom-right-radius: 4px; }
+    .typing .bubble { display: flex; gap: 5px; align-items: center; padding: 14px 18px; }
+    .tdot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--grey);
+      animation: bounce 1.2s infinite;
+    }
+    .tdot:nth-child(2){animation-delay:0.2s}
+    .tdot:nth-child(3){animation-delay:0.4s}
+    @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+    .empty-state {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; color: var(--grey); text-align: center; padding: 20px;
+    }
+    .empty-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: #fde8eb;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 4px;
+    }
+    .empty-state p { font-size: 13px; color: var(--grey); max-width: 260px; line-height: 1.6; }
+    .input-area {
+      display: flex; gap: 10px; align-items: flex-end;
+      padding: 14px 16px;
+      border-top: 1px solid var(--border);
+      background: var(--white);
+    }
+    textarea {
+      flex: 1;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--dark-grey);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 14px;
+      padding: 10px 14px;
+      resize: none; outline: none;
+      line-height: 1.5; max-height: 110px;
+      transition: border-color 0.2s;
+    }
+    textarea::placeholder { color: var(--grey); }
+    textarea:focus { border-color: var(--red); }
+    button#send {
+      width: 42px; height: 42px;
+      border-radius: 10px; border: none;
+      background: var(--red); color: white;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, transform 0.15s;
+    }
+    button#send:hover { background: var(--red-dark); }
+    button#send:active { transform: scale(0.94); }
+    button#send:disabled { opacity: 0.4; cursor: not-allowed; }
+    button#send svg { width: 16px; height: 16px; }
+    .footer { margin-top: 20px; font-size: 12px; color: var(--grey); text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1229.9607 283.4647" height="70" aria-label="GoVacation Indonesia">
+        <defs><style>.cls-1{fill:#e40028}.cls-2{fill:#878787}</style></defs>
+        <g id="Indonesia"><path class="cls-2" d="M646.5027,282.3312v-77.1234h13.1546v77.1234h-13.1546Z"/><path class="cls-2" d="M678.7145,282.3312v-77.1234h13.1573l34.1375,52.8519h.2267v-52.8519h12.8159v77.1234h-13.1573l-34.1375-51.3769h-.2267v51.3769h-12.8159Z"/><path class="cls-2" d="M758.1117,282.3312v-77.1234h28.1283c25.8585,0,33.3453,16.3326,33.3453,37.9956,0,21.8884-7.4868,39.1278-33.3453,39.1278h-28.1283ZM786.24,270.5355c15.8778,0,19.5079-11.4556,19.5079-27.3321s-3.6301-26.1999-19.5079-26.1999h-14.971v53.532h14.971Z"/><path class="cls-2" d="M833.5428,243.2033c0-21.663,6.804-39.1292,33.5694-39.1292s33.572,17.4662,33.572,39.1292c0,21.8884-6.804,40.2614-33.572,40.2614s-33.5694-18.373-33.5694-40.2614ZM847.3775,243.2033c0,15.8765,2.9499,29.2605,19.7346,29.2605s19.7346-13.384,19.7346-29.2605-2.9473-28.0149-19.7346-28.0149-19.7346,12.1358-19.7346,28.0149Z"/><path class="cls-2" d="M915.7752,282.3312v-77.1234h13.1573l34.1375,52.8519h.2267v-52.8519h12.8186v77.1234h-13.1573l-34.1402-51.3769h-.2267v51.3769h-12.8159Z"/><path class="cls-2" d="M1045.8706,217.0034h-37.5408v19.5079h32.4385v11.7944h-32.4385v22.2298h38.109v11.7957h-51.2663v-77.1234h50.6981v11.7957Z"/><path class="cls-2" d="M1063.2287,279.3826l2.2698-11.1156c11.909,2.8352,20.076,3.4033,26.1999,3.4033,9.6393,0,14.6296-4.7636,14.6296-10.4354,0-8.279-9.9807-10.094-18.6011-12.4758-12.9279-3.514-23.362-10.6595-23.362-23.7034,0-15.0844,12.2478-20.9815,27.3335-20.9815,8.6204,0,16.558,1.1336,26.6507,4.0822l-2.9473,11.1156c-11.909-2.8352-17.5795-3.402-23.7034-3.402-9.6419,0-13.4987,4.1955-13.4987,9.5259,0,7.6002,9.7566,10.2087,18.7157,12.2505,12.9306,2.9486,23.25,9.1858,23.25,22.5685,0,15.8778-12.3625,23.25-28.467,23.25-8.6204,0-18.489-1.1336-28.4697-4.0822Z"/><path class="cls-2" d="M1135.7099,282.3312v-77.1234h13.1546v77.1234h-13.1546Z"/><path class="cls-2" d="M1209.546,263.8435h-26.88l-5.8972,18.4877h-13.9521l25.6345-77.6902h16.2192l25.2904,77.6902h-14.6296l-5.7852-18.4877ZM1196.162,221.0869l-10.7728,31.6423h21.4363l-10.4368-31.6423h-.2267Z"/></g>
+        <g id="Go_Vacation"><path class="cls-2" d="M14.4042,137.3555C4.7996,123.0646,0,103.3687,0,78.2623c0-24.6489,4.7996-43.8568,14.4042-57.6195C24.0061,6.8827,41.3616,0,66.4666,0c9.0751,0,17.5035.6441,25.2944,1.9284,7.7869,1.2856,16.8994,3.5154,27.3348,6.6907l-6.8054,26.0879c-12.2505-2.8712-21.0229-4.7249-26.3146-5.5571-5.2957-.8295-10.9675-1.2482-17.0141-1.2482-13.4614,0-22.8366,4.2355-28.1283,12.7039-5.2971,8.471-7.9403,21.0215-7.9403,37.6569,0,17.6942,2.6085,30.9289,7.8256,39.6973,5.2184,8.7724,14.6323,13.1573,28.243,13.1573,4.0835,0,7.4468-.2267,10.0954-.6801,2.6432-.4534,5.6318-1.3616,8.9591-2.7219v-26.0866h-17.0114c-5.5985-6.0479-8.3937-12.9306-8.3937-20.6441,0-2.5698.3014-4.9903.9068-7.2588h55.5778v74.4056c-10.7395,3.7821-19.8133,6.504-27.2228,8.167-7.4108,1.6617-15.8778,2.4952-25.4064,2.4952-25.105,0-42.4605-7.1454-52.0624-21.4376Z"/><path class="cls-2" d="M133.8388,78.2623c0-16.7874,2.0404-30.8875,6.1239-42.3071,4.0835-11.417,11.1156-20.2641,21.0976-26.5426,9.9807-6.2733,23.6661-9.4125,41.0589-9.4125,17.2408,0,30.8128,3.1393,40.7201,9.4125,9.9033,6.2786,16.822,15.1257,20.7562,26.5426,3.9315,11.4196,5.8985,25.5198,5.8985,42.3071,0,26.0132-4.917,45.9359-14.7456,59.7733-9.8313,13.8388-27.3735,20.7575-52.6292,20.7575s-42.9526-6.9547-53.0826-20.8708c-10.1327-13.9121-15.1977-33.7988-15.1977-59.6599ZM166.7307,78.2623c0,11.3423.9068,20.7562,2.7232,28.2417,1.8137,7.4855,5.2917,13.3493,10.4341,17.5809,5.1397,4.2355,12.5518,6.3519,22.2311,6.3519s17.0141-2.1164,22.0044-6.3519c4.9903-4.2315,8.3163-10.0167,9.982-17.3541,1.663-7.3321,2.4952-16.8207,2.4952-28.4684,0-11.4916-.8322-20.7175-2.4952-27.6762-1.6657-6.9547-4.9917-12.3985-9.982-16.3326-4.9903-3.9315-12.3278-5.8985-22.0044-5.8985s-17.0914,1.9671-22.2311,5.8985c-5.1424,3.9341-8.6204,9.4139-10.4341,16.446-1.8164,7.0321-2.7232,16.2206-2.7232,27.5628Z"/><path class="cls-1" d="M394.2589.9068c3.7794,0,7.2601.2267,10.4354.6801,3.1753.4548,5.5198,1.0602,7.0321,1.815l-50.3607,153.1226h-40.6055L270.8529,2.2685h36.0685l34.935,116.3726h.2267L376.338,3.402c4.9903-1.6617,10.9622-2.4952,17.9209-2.4952Z"/><path class="cls-1" d="M499.2879,156.5246l-34.4802-116.3739h-.4534l-17.9223,55.3524h20.8708c4.3849,3.0273,7.5215,6.9974,9.4152,11.9077,1.8884,4.917,2.9833,9.6419,3.2887,14.1788h-39.9253l-10.4354,34.935h-34.4802L445.0717,2.2685h40.8322l49.2272,154.2562h-35.8432Z"/><path class="cls-1" d="M547.9456,20.7562c9.4499-13.8388,26.1226-20.7562,50.0207-20.7562,8.9218,0,16.9354.6055,24.0461,1.8137,7.1068,1.2122,16.1059,3.4807,26.9947,6.8054l-7.0321,26.9961c-12.4025-2.8712-21.1362-4.7249-26.2012-5.5584-5.069-.8295-10.5474-1.2482-16.446-1.2482-12.5558,0-21.1362,4.0835-25.7478,12.2505-4.6143,8.167-6.9187,20.5681-6.9187,37.2034,0,17.6942,2.3045,30.7755,6.9187,39.2439,4.6116,8.471,13.192,12.7039,25.7478,12.7039,5.8985,0,11.3769-.4147,16.446-1.2482,5.065-.8295,13.7988-2.6832,26.2012-5.5571l7.0321,26.9947c-10.8888,3.1766-19.888,5.3704-26.9947,6.5786-7.1108,1.2096-15.1244,1.815-24.0461,1.815-23.8981,0-40.5708-7.1814-50.0207-21.551-9.4526-14.3655-14.1775-34.0268-14.1775-58.9798,0-24.4996,4.7249-43.6687,14.1775-57.5062Z"/><path class="cls-1" d="M758.8025,156.5246l-34.4816-116.3739h-.4534l-17.9196,55.3524h20.8682c4.3849,3.0273,7.5215,6.9974,9.4152,11.9077,1.8884,4.917,2.9846,9.6419,3.2887,14.1788h-39.924l-10.4354,34.935h-34.4816L704.5863,2.2685h40.8322l49.2272,154.2562h-35.8432Z"/><path class="cls-1" d="M889.4659,18.261c-1.815,5.217-4.7636,9.3392-8.8471,12.3625h-30.1714v125.9012h-32.6652V30.6235h-37.8836V2.2685h112.2891c0,5.4438-.9068,10.7742-2.7219,15.9925Z"/><path class="cls-1" d="M904.6623,2.2685h32.4398v154.2562h-32.4398V2.2685Z"/><path class="cls-1" d="M951.3917,78.2623c0-25.8612,5.4051-45.3704,16.2206-58.5277,10.8102-13.1573,28.0136-19.7346,51.6063-19.7346s40.7948,6.5773,51.609,19.7346c10.8115,13.1573,16.2206,32.6665,16.2206,58.5277,0,26.1652-5.4451,46.1279-16.3339,59.888-10.8888,13.7628-28.0549,20.6428-51.4956,20.6428s-40.6041-6.88-51.493-20.6428c-10.8888-13.7601-16.3339-33.7227-16.3339-59.888ZM984.2836,78.2623c0,11.4943.8682,20.9482,2.6085,28.355,1.7377,7.4121,5.1397,13.236,10.2087,17.4675,5.065,4.2355,12.4385,6.3519,22.1178,6.3519s17.0501-2.1164,22.1191-6.3519c5.065-4.2315,8.467-10.0553,10.2074-17.4675,1.7377-7.4068,2.6085-16.8607,2.6085-28.355,0-11.3423-.8708-20.5308-2.6085-27.5628-1.7403-7.0321-5.1424-12.5118-10.2074-16.446-5.069-3.9315-12.4425-5.8985-22.1191-5.8985s-17.0527,1.9671-22.1178,5.8985c-5.069,3.9341-8.471,9.4139-10.2087,16.446-1.7403,7.0321-2.6085,16.2206-2.6085,27.5628Z"/><path class="cls-1" d="M1106.328,2.2685h31.3049l61.703,96.8647h.4548V2.2685h30.17v154.2562h-31.0782l-61.703-93.4614h-.4548v93.4614h-30.3967V2.2685Z"/></g>
+      </svg>
+    </div>
+    <div class="divider"></div>
+    <p class="tagline">Butuh bantuan? Cukup ketik nama sampah yang ingin Anda buang di kotak chat di bawah ini, dan asisten AI kami akan memberikan jawabannya secara instan.</p>
+  </div>
+
+  <div class="chat-wrap">
+    <div class="chat-topbar">
+      <div class="topbar-dot"></div>
+      <span class="topbar-label">AI Assistant</span>
+      <span class="topbar-sub">&nbsp;· Online</span>
+    </div>
+    <div class="messages" id="messages">
+      <div class="empty-state" id="empty">
+        <div class="empty-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e40028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <p>Ketik pertanyaan Anda di bawah ini untuk memulai percakapan.</p>
+      </div>
+    </div>
+    <div class="input-area">
+      <textarea id="input" rows="1" placeholder="Ketik pesan Anda di sini..."></textarea>
+      <button id="send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">© 2025 GoVacation Indonesia. All rights reserved.</div>
+
+<script>
+  const BOT_ID = '7627747613765435397';
+  const TOKEN  = 'pat_YOUR_REAL_TOKEN_HERE';
+
+  const messagesEl = document.getElementById('messages');
+  const inputEl    = document.getElementById('input');
+  const sendBtn    = document.getElementById('send');
+  const emptyEl    = document.getElementById('empty');
+
+  let conversationId = null;
+  let isLoading = false;
+
+  function removeEmpty() { if (emptyEl) emptyEl.remove(); }
+
+  function addMessage(role, text) {
+    removeEmpty();
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+    msg.innerHTML = `
+      <div class="msg-avatar">${role === 'user' ? 'You' : 'GV'}</div>
+      <div class="bubble">${text.replace(/\n/g, '<br>')}</div>
+    `;
+    messagesEl.appendChild(msg);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return msg;
+  }
+
+  function showTyping() {
+    removeEmpty();
+    const msg = document.createElement('div');
+    msg.className = 'msg bot typing';
+    msg.id = 'typing';
+    msg.innerHTML = `
+      <div class="msg-avatar">GV</div>
+      <div class="bubble">
+        <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
+      </div>
+    `;
+    messagesEl.appendChild(msg);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  async function sendMessage() {
+    const text = inputEl.value.trim();
+    if (!text || isLoading) return;
+
+    isLoading = true;
+    sendBtn.disabled = true;
+    inputEl.value = '';
+    inputEl.style.height = 'auto';
+
+    addMessage('user', text);
+    showTyping();
+
+    try {
+      const res = await fetch('https://api.coze.com/open_api/v2/chat', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${TOKEN}`,
+          'Content-Type': 'application/json',
+          'Accept': '*/*'
+        },
+        body: JSON.stringify({
+          bot_id: BOT_ID,
+          conversation_id: conversationId || '123',
+          user: 'web_user',
+          query: text,
+          stream: false
+        })
+      });
+
+      const data = await res.json();
+      removeTyping();
+
+      const messages = data?.messages || [];
+      const answer = messages.find(m => m.role === 'assistant' && m.type === 'answer');
+      const botReply = answer?.content || 'Maaf, tidak ada respons. Silakan coba lagi.';
+
+      if (data?.conversation_id) conversationId = data.conversation_id;
+      addMessage('bot', botReply);
+
+    } catch (err) {
+      removeTyping();
+      addMessage('bot', 'Terjadi kesalahan koneksi. Silakan coba lagi.');
+      console.error(err);
+    }
+
+    isLoading = false;
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+  inputEl.addEventListener('input', () => {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 110) + 'px';
+  });
+</script>
+
+</body>
+</html>
