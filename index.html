@@ -282,10 +282,13 @@ function addMessage(role, text) {
     removeEmpty();
     const msg = document.createElement('div');
     msg.className = `msg ${role}`;
+const feedbackId = 'fb_' + Date.now();
+    window._fbTexts = window._fbTexts || {};
+    window._fbTexts[feedbackId] = text;
     const feedback = role === 'bot' ? `
       <div class="feedback">
-        <button onclick="sendFeedback(this, '${text.replace(/'/g, "\\'")}', 'good')" class="fb-btn">👍</button>
-        <button onclick="sendFeedback(this, '${text.replace(/'/g, "\\'")}', 'flagged')" class="fb-btn">👎</button>
+        <button onclick="sendFeedback(this, window._fbTexts['${feedbackId}'], 'good')" class="fb-btn">👍</button>
+        <button onclick="sendFeedback(this, window._fbTexts['${feedbackId}'], 'flagged')" class="fb-btn">👎</button>
       </div>` : '';
     msg.innerHTML = `
       <div class="msg-avatar">${role === 'user' ? 'You' : 'GV'}</div>
