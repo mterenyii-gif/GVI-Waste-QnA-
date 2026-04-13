@@ -61,22 +61,6 @@
       margin-top: 8px;
       font-style: italic;
     }
-    .tagline {
-      font-size: 15px;
-      font-weight: 400;
-      color: var(--dark-grey);
-      text-align: left;
-      max-width: 560px;
-      line-height: 1.65;
-    }
-    .disclaimer {
-      font-size: 12px;
-      color: var(--grey);
-      text-align: left;
-      max-width: 560px;
-      margin-top: 8px;
-      font-style: italic;
-    }
     .chat-wrap {
       width: 100%;
       max-width: 700px;
@@ -197,6 +181,11 @@
     button#send:disabled { opacity: 0.4; cursor: not-allowed; }
     button#send svg { width: 16px; height: 16px; }
     .footer { margin-top: 20px; font-size: 12px; color: var(--grey); text-align: center; }
+    .bubble-wrap { display: flex; flex-direction: column; max-width: 72%; }
+    .bubble { max-width: 100%; }
+    .feedback { display: flex; gap: 6px; margin-top: 4px; padding-left: 4px; }
+    .fb-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.5; transition: opacity 0.2s; }
+    .fb-btn:hover { opacity: 1; }
   </style>
 </head>
 <body>
@@ -258,18 +247,41 @@
     .replace(/\n/g, '<br>');
   }
   
+  function sendFeedback(btn, botReply, status) {
+    const wrap = btn.closest('.feedback');
+    wrap.innerHTML = status === 'good' ? '✅ Thanks!' : '🚩 Flagged!';
+    fetch('https://script.google.com/macros/s/AKfycbxfNeywyqYncZe1hVnpIhDZzYDegs82sqLiw9T4WiYmUbhIZp0LHj1PIhXs6oC4jzGmUQ/exec', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userMessage: '⭐ FEEDBACK',
+        botReply: botReply,
+        status: status.toUpperCase()
+      })
+    });
+  }
+  
   let conversationId = null;
   let isLoading = false;
 
   function removeEmpty() { if (emptyEl) emptyEl.remove(); }
 
-  function addMessage(role, text) {
+function addMessage(role, text) {
     removeEmpty();
     const msg = document.createElement('div');
     msg.className = `msg ${role}`;
+    const feedback = role === 'bot' ? `
+      <div class="feedback">
+        <button onclick="sendFeedback(this, '${text.replace(/'/g, "\\'")}', 'good')" class="fb-btn">👍</button>
+        <button onclick="sendFeedback(this, '${text.replace(/'/g, "\\'")}', 'flagged')" class="fb-btn">👎</button>
+      </div>` : '';
     msg.innerHTML = `
       <div class="msg-avatar">${role === 'user' ? 'You' : 'GV'}</div>
-      <div class="bubble">${formatText(text)}</div>
+      <div class="bubble-wrap">
+        <div class="bubble">${formatText(text)}</div>
+        ${feedback}
+      </div>
     `;
     messagesEl.appendChild(msg);
     messagesEl.scrollTop = messagesEl.scrollHeight;
