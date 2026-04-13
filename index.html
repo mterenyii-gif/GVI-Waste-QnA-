@@ -332,8 +332,19 @@
       const answer = messages.find(m => m.role === 'assistant' && m.type === 'answer');
       const botReply = answer?.content || 'Maaf, tidak ada respons. Silakan coba lagi.';
 
-      if (data?.conversation_id) conversationId = data.conversation_id;
+     if (data?.conversation_id) conversationId = data.conversation_id;
       addMessage('bot', botReply);
+
+      // Log to Google Sheets
+      fetch('https://script.google.com/macros/s/AKfycbxfNeywyqYncZe1hVnpIhDZzYDegs82sqLiw9T4WiYmUbhIZp0LHj1PIhXs6oC4jzGmUQ/exec', {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userMessage: text,
+          botReply: botReply
+        })
+      });
 
     } catch (err) {
       removeTyping();
