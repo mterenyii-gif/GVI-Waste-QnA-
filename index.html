@@ -265,16 +265,18 @@ const wrap = btn.closest('.feedback');
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+body: JSON.stringify({
         userMessage: '⭐ FEEDBACK',
         botReply: botReply,
-        status: status.toUpperCase()
+        status: status.toUpperCase(),
+        sessionId: sessionId
       })
     });
   }
   
-  let conversationId = null;
-  let isLoading = false;
+let conversationId = null;
+let isLoading = false;
+const sessionId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
 
   function removeEmpty() { if (emptyEl) emptyEl.remove(); }
 
@@ -361,15 +363,16 @@ const feedbackId = 'fb_' + Date.now();
      if (data?.conversation_id) conversationId = data.conversation_id;
       addMessage('bot', botReply);
 
-      // Log to Google Sheets
-fetch('https://script.google.com/macros/s/AKfycbxfNeywyqYncZe1hVnpIhDZzYDegs82sqLiw9T4WiYmUbhIZp0LHj1PIhXs6oC4jzGmUQ/exec', {
+// Log to Google Sheets
+      fetch('https://script.google.com/macros/s/AKfycbxfNeywyqYncZe1hVnpIhDZzYDegs82sqLiw9T4WiYmUbhIZp0LHj1PIhXs6oC4jzGmUQ/exec', {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userMessage: text,
           botReply: botReply,
-          status: 'LOG'
+          status: 'LOG',
+          sessionId: sessionId
         })
       });
     } catch (err) {
