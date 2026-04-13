@@ -184,8 +184,11 @@
     .bubble-wrap { display: flex; flex-direction: column; max-width: 72%; }
     .bubble { max-width: 100%; }
     .feedback { display: flex; gap: 6px; margin-top: 4px; padding-left: 4px; }
-    .fb-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.5; transition: opacity 0.2s; }
+    .fb-btn { background: none; border: none; cursor: pointer; font-size: 14px; opacity: 0.5; transition: opacity 0.2s, transform 0.15s; }
     .fb-btn:hover { opacity: 1; }
+    .fb-btn:active { transform: scale(1.4); }
+    .feedback-done { font-size: 13px; animation: popIn 0.3s ease; }
+    @keyframes popIn { from{opacity:0; transform:scale(0.5)} to{opacity:1; transform:scale(1)} }
   </style>
 </head>
 <body>
